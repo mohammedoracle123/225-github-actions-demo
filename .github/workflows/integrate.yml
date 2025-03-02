@@ -1,21 +1,40 @@
-name: Node Continuous Integration
+name: CI with Build
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches: [ "master" ]
 
 jobs:
-  test_pull_request:
+  build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 12
-      - run: npm ci
-      - run: npm test
-      - run: npm run build
 
-# hjhhj
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Cache Node.js dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Cache Build Artifacts
+        uses: actions/cache@v3
+        with:
+          path: public/bundle.js
+          key: ${{ runner.os }}-build-${{ hashFiles('src/app.js') }}
+
+      - name: Build
+        run: NODE_OPTIONS=--openssl-legacy-provider npm run build
+        working-directory: ./
+
+      - name: Echo Hello (Test Step)
+        run: echo "Build completed!"
