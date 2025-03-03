@@ -52,9 +52,14 @@ jobs:
           echo "now=${NOW}" >> $GITHUB_OUTPUT
         env:
           TZ: America/New_York
-      - name: Send the time
-        uses: satak/webrequest-action@master
+      - name: Send Discord notification
+        uses: actions/github-script@v6
         with:
-          url: https://discord.com/api/webhooks/1089992325813510215/4ZhVwKh2vzmBxlBAvDuyTREaUvZsIvidEDA9ZguXyfPEehcWI3K7w-xYUH7bHaT4SeYH
-          method: POST
-          payload: '{ "content": "The workflow ran at ${{ steps.time.outputs.now }}!"}'
+          script: |
+            const { WebhookClient, MessageEmbed } = require('discord.js');
+            const webhookClient = new WebhookClient({ url: 'https://discord.com/api/webhooks/1089992325813510215/4ZhVwKh2vzmBxlBAvDuyTREaUvZsIvidEDA9ZguXyfPEehcWI3K7w-xYUH7bHaT4SeYH' });
+            const embed = new MessageEmbed()
+              .setTitle('Workflow Triggered')
+              .setDescription('The workflow was triggered manually.')
+              .setTimestamp();
+            webhookClient.send({ embeds: [embed] });
