@@ -3,40 +3,58 @@ name: CI with Build
 on:
   push:
     branches: [ "master" ]
+  workflow_dispatch:
 
 jobs:
-  build:
+  build_on_push:  # Job specifically for push events
+    if: github.event_name == 'push'  # Condition to run only on push
     runs-on: ubuntu-latest
-
+   
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
+     
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-
+     
       - name: Cache Node.js dependencies
         uses: actions/cache@v3
         with:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-
+     
       - name: Install dependencies
         run: npm install
-
+      
       - name: Cache Build Artifacts
         uses: actions/cache@v3
         with:
           path: public/bundle.js
           key: ${{ runner.os }}-build-${{ hashFiles('src/app.js') }}
-
+     
       - name: Build
         run: NODE_OPTIONS=--openssl-legacy-provider npm run build
         working-directory: ./
-
+     
       - name: Echo Hello (Test Step)
         run: echo "Build completed!"
 
-# ffff
+  notify_on_dispatch:  # Job specifically for workflow_dispatch
+    if: github.event_name == 'workflow_dispatch'  # Condition to run only on dispatch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the time
+        id: time
+        run: |
+          NOW=$(date +"%r")
+          echo "now=${NOW}" >> $GITHUB_OUTPUT
+        env:
+          TZ: America/New_York
+      - name: Send the time
+        uses: satak/webrequest-action@master
+        with:
+          url: https://discord.com/api/webhooks/1089992325813510215/4ZhVwKh2vzmBxlBAvDuyTREaUvZsIvidEDA9ZguXyfPEehcWI3K7w-xYUH7bHaT4SeYH
+          method: POST
+          payload: '{ "content": "The workflow ran at ${{ steps.time.outputs.now }}!"}'
