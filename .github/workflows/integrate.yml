@@ -1,10 +1,56 @@
-name: Hello World
+name: HYD Pipeline
 
 on: [push]
 
 jobs:
-  say-hello:
+
+  precheck:
     runs-on: ubuntu-latest
     steps:
-      - name: Print Hello
-        run: echo "Hello from GitHub Actions!"
+      - name: Precheck
+        run: echo "Running precheck..." && sleep 2
+
+  build:
+    runs-on: ubuntu-latest
+    needs: precheck
+    steps:
+      - name: Build
+        run: echo "Building project..." && sleep 3
+
+  lint:
+    runs-on: ubuntu-latest
+    needs: precheck
+    steps:
+      - name: Lint
+        run: echo "Linting code..." && sleep 2
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    needs: precheck
+    steps:
+      - name: Unit Tests
+        run: echo "Running unit tests..." && sleep 3
+
+  package:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - lint
+      - unit-tests
+    steps:
+      - name: Package
+        run: echo "Packaging..." && sleep 2
+
+  integration:
+    runs-on: ubuntu-latest
+    needs: package
+    steps:
+      - name: Integration Tests
+        run: echo "Running integration tests..." && sleep 4
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: integration
+    steps:
+      - name: Deploy
+        run: echo "Deploying..." && sleep 2
