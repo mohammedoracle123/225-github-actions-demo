@@ -9,6 +9,10 @@ jobs:
     steps:
       - name: Precheck
         run: echo "Running precheck..." && sleep 2
+      - name: Dependency check
+        run: echo "Checking dependencies..." && sleep 2
+      - name: License check
+        run: echo "Checking licenses..." && sleep 1
 
   build:
     runs-on: ubuntu-latest
